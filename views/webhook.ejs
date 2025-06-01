@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Telegram Webhook Manager</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-4">
+  <h2>🔧 Webhook Telegram</h2>
+
+  <form action="/webhook/set" method="POST" class="mb-4">
+    <label for="url" class="form-label">Webhook URL</label>
+    <input type="text" class="form-control mb-2" id="url" name="url" placeholder="https://yourdomain.com" required>
+    <button type="submit" class="btn btn-primary">Set Webhook</button>
+  </form>
+    <form action="/webhook/delete" method="POST" onsubmit="return confirm('Yakin ingin menghapus webhook Telegram?');">
+    <button type="submit" class="btn btn-danger">🗑️ Hapus Webhook</button>
+  </form>
+
+  <h4>ℹ️ Info Webhook Saat Ini</h4>
+
+  <% if (info && info.ok && info.result) { 
+       const result = info.result; 
+  %>
+    <table class="table table-bordered">
+      <tr><th>URL</th><td><%= result.url || "Tidak diset" %></td></tr>
+      <tr><th>Has Custom Certificate</th><td><%= result.has_custom_certificate %></td></tr>
+      <tr><th>Pending Update Count</th><td><%= result.pending_update_count %></td></tr>
+      <tr><th>Last Error Date</th><td><%= result.last_error_date ? new Date(result.last_error_date * 1000).toLocaleString() : "-" %></td></tr>
+      <tr><th>Last Error Message</th><td><%= result.last_error_message || "-" %></td></tr>
+    </table>
+  <% } else { %>
+    <div class="alert alert-warning">❌ Gagal memuat informasi webhook dari Telegram API.</div>
+  <% } %>
+
+  <a href="/" class="btn btn-secondary mt-3">⬅ Kembali ke Dashboard</a>
+</body>
+</html>

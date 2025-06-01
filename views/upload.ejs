@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Upload Video</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-size: 0.9rem;
+    }
+    #drop-zone {
+      border: 2px dashed #0d6efd;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      color: #0d6efd;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      background-color: #fff;
+    }
+    #drop-zone.dragover {
+      background-color: #e7f1ff;
+    }
+    #video-input {
+      display: none;
+    }
+    #file-name {
+      color: #555;
+      min-height: 1rem;
+      font-size: 0.85rem;
+    }
+    label {
+      margin-bottom: 0.25rem;
+      font-weight: 500;
+    }
+    input, button, video {
+      font-size: 0.9rem;
+    }
+    .btn-sm {
+      padding: 0.35rem 0.75rem;
+    }
+  </style>
+</head>
+<body class="container py-4">
+
+  <h5 class="mb-3">📤 Upload Video</h5>
+
+  <form action="/upload" method="POST" enctype="multipart/form-data" id="upload-form" class="bg-white border rounded p-3 shadow-sm">
+
+    <div id="drop-zone" class="mb-2">
+      <div><strong>📂 Drag & Drop</strong> a video here or <span class="text-decoration-underline">click to select</span></div>
+    </div>
+
+    <div id="file-name" class="mb-2 text-muted"></div>
+    <input type="file" id="video-input" name="video" accept="video/*" required>
+
+    <div class="mb-2">
+      <label for="title">Title</label>
+      <input type="text" id="title" name="title" class="form-control form-control-sm" required>
+    </div>
+
+    <div class="mb-2">
+      <label for="code">Code</label>
+      <input type="text" id="code" name="code" class="form-control form-control-sm" required>
+    </div>
+
+    <div class="mb-2">
+      <label for="scheduled_date">Scheduled Date</label>
+      <input type="datetime-local" id="scheduled_date" name="scheduled_date" class="form-control form-control-sm" required>
+    </div>
+
+    <div class="mb-3">
+      <label>Preview</label><br>
+      <video id="preview" width="100%" style="max-width: 300px; display: none;" controls></video>
+    </div>
+
+    <div class="d-flex justify-content-between">
+      <button type="submit" class="btn btn-primary btn-sm">Upload</button>
+      <a href="/videos" class="btn btn-outline-secondary btn-sm">📼 All Videos</a>
+    </div>
+  </form>
+
+  <script>
+    const dropZone = document.getElementById('drop-zone');
+    const videoInput = document.getElementById('video-input');
+    const preview = document.getElementById('preview');
+    const fileNameDisplay = document.getElementById('file-name');
+
+    dropZone.addEventListener('click', () => videoInput.click());
+
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        const file = e.dataTransfer.files[0];
+        if (file.type.startsWith('video/')) {
+          videoInput.files = e.dataTransfer.files;
+          showPreview(file);
+          showFileName(file);
+        } else {
+          alert('Please drop a valid video file.');
+        }
+      }
+    });
+
+    videoInput.addEventListener('change', () => {
+      if (videoInput.files.length) {
+        const file = videoInput.files[0];
+        showPreview(file);
+        showFileName(file);
+      }
+    });
+
+    function showPreview(file) {
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+    }
+
+    function showFileName(file) {
+      fileNameDisplay.textContent = `Selected: ${file.name}`;
+    }
+  </script>
+</body>
+</html>

@@ -326,57 +326,52 @@ body > .container {
     </div>
   </nav>
 
-  <form action="/upload" method="POST" enctype="multipart/form-data" id="upload-form" class="bg-white border rounded p-3 shadow-sm">
+  <form action="/video/edit/<%= video.id %>" method="POST" enctype="multipart/form-data" id="upload-form" class="bg-white border rounded p-3 shadow-sm">
 
     <!-- Dropzone -->
     <div id="drop-zone" class="mb-2">
-      <div><strong>📂 Drag & Drop</strong> a video here or <span class="text-decoration-underline">click to select</span></div>
+        <div>
+            <strong>📂 Replace Video (optional)</strong> a video here or <span class="text-decoration-underline">click to select</span>
+            <small class="text-muted">Leave empty to keep existing video</small>
+        </div>
     </div>
 
-    <div id="file-name" class="mb-3 text-muted"></div>
-    <input type="file" id="video-input" name="video" accept="video/*" required>
+    <input type="file" id="video-input" name="video" accept="video/*">
 
     <!-- Title -->
     <div class="mb-2">
       <label for="title">Title</label>
-      <input type="text" id="title" name="title" class="form-control form-control-sm" autocomplete="off" required>
+      <input type="text" id="title" name="title" class="form-control form-control-sm" value="<%= video.title %>" autocomplete="off" required>
     </div>
 
     <!-- Code -->
     <div class="mb-3">
       <label for="code" class="form-label">Code</label>
-      <input type="text" name="code" id="code" class="form-control" readonly required>
-    </div>
-
-    <div class="form-check mb-3">
-      <input class="form-check-input" type="checkbox" value="DWS" id="isDwsCheck">
-      <label class="form-check-label" for="isDwsCheck">
-        Is it DWS?
-      </label>
+      <input type="text" name="code" id="code" class="form-control" value="<%= video.code %>" readonly>
     </div>
 
     <!-- Genre -->
     <div class="mb-2 position-relative">
       <label for="genre">Genre</label>
-      <input type="text" id="genre" name="genre" class="form-control form-control-sm" autocomplete="off">
+      <input type="text" id="genre" name="genre" value="<%= video.genre %>" class="form-control form-control-sm" autocomplete="off">
       <ul id="genre-suggestions" class="list-group position-absolute w-100 shadow-sm" style="display: none;"></ul>
     </div>
 
     <div class="form-check mb-2">
-      <input class="form-check-input" type="checkbox" id="isSeries">
+      <input class="form-check-input" type="checkbox" id="isSeries" <%= video.series_title ? 'checked' : ''%>>
       <label class="form-check-label" for="isSeries">Is this part of a series?</label>
     </div>
 
-    <div id="series-fields" style="display: none;">
+    <div id="series-fields" style="<%= video.series_title ? '' : 'display:none;' %>">
       <div class="mb-2">
         <label for="series_code">Series Code</label>
-        <input type="text" id="series_code" name="series_code" class="form-control form-control-sm" autocomplete="off">
+        <input type="text" id="series_code" name="series_code" value="<%= video.series_code || '' %>" class="form-control form-control-sm" autocomplete="off">
         <ul id="seriescode-suggestions" class="list-group position-absolute w-100 shadow-sm" style="display: none;"></ul>
       </div>
 
       <div class="mb-2">
         <label for="series_title">Series Title</label>
-        <input type="text" id="series_title" name="series_title" class="form-control form-control-sm" autocomplete="off">
+        <input type="text" id="series_title" name="series_title" value="<%= video.series_title || '' %>" class="form-control form-control-sm" autocomplete="off">
         <ul id="series-suggestions" class="list-group position-absolute w-100 shadow-sm" style="display: none;"></ul>
       </div>
     </div>
@@ -386,23 +381,35 @@ body > .container {
       <label for="rating">Rating</label>
       <div id="stars">
         <% for (let i = 1; i <= 5; i++) { %>
-          <span class="star" data-value="<%= i %>">&#9734;</span>
+          <span class="star" data-value="<%= i %>" style="color:<%= i <= video.rating ? 'gold' : '#ccc' %>"><%= i <= video.rating ? '★' : '☆'%></span>
         <% } %>
       </div>
-      <input type="hidden" name="rating" id="rating" value="0">
+      <input type="hidden" name="rating" id="rating" value="<%= video.rating %>">
     </div>
 
     <!-- Preview -->
     <div class="mb-3">
-      <label>Preview</label><br>
-      <video id="preview" style="display: none;" controls></video>
+      <label>Preview Current Video</label><br>
+      <video id="preview" src="/<%= video.path %>" style="display: block;" controls></video>
     </div>
 
     <!-- Buttons -->
-    <div class="d-flex justify-content-between">
-      <button type="submit" class="btn btn-primary btn-sm">Upload</button>
-      <a href="/video" class="btn btn-outline-secondary btn-sm">📼 All Video</a>
-    </div>
+     <div class="d-flex justify-content-between gap-2">
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-warning btn-sm">
+                Save Changes
+            </button>
+
+            <button type="button" class="btn btn-danger btn-sm" onclick="moveToDump(<%= video.id %>)">
+                Delete
+            </button>
+        </div>
+
+        <a href="/video" class="btn btn-outline-secondary btn-sm">
+            Cancel
+        </a>
+
+     </div>
   </form>
 
   <!-- Upload Flyout Modal -->
@@ -419,6 +426,14 @@ body > .container {
   </div>
 
   <script>
+  function moveToDump(id) {
+    if (!confirm("Delete this video will get the video to dump, you can still restore it later.")) return;
+
+    fetch(`/video/dump/${id}`, {method: "POST" })
+    .then(() => window.location.href = "/video")
+    .catch(err => alert("Failed to delete video"));
+  }  
+
   const themeBtn = document.getElementById('toggleThemeBtn');
   const body = document.body;
 
@@ -636,115 +651,12 @@ body > .container {
       }
     });
 
-    const form = document.getElementById("upload-form");
-    const modal = document.getElementById("uploadModal");
-    const progressBar = document.getElementById("uploadProgressBar");
-    const statusText = document.getElementById("uploadStatusText");
-    const fileNameText = document.getElementById("uploadFileName");
-
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const file = formData.get("video");
-      formData.append("is_series", isSeries.checked);
-      if (!file) return alert("No video selected.");
-
-      showUploadModal(file.name);
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", "/upload");
-
-      xhr.upload.addEventListener("progress", (e) => {
-        if (e.lengthComputable) {
-          const percent = (e.loaded / e.total) * 100;
-          progressBar.style.width = percent + "%";
-          statusText.textContent = `Uploading... ${Math.floor(percent)}%`;
-          saveUploadState(file.name, percent);
-        }
-      });
-
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          statusText.textContent = "✅ Upload Complete";
-          progressBar.classList.add("bg-success");
-          clearUploadState();
-          setTimeout(() => modal.style.display = "none", 3000);
-          location.href = "/upload";
-        } else {
-          statusText.textContent = "❌ Upload Failed";
-          progressBar.classList.add("bg-danger");
-        }
-      };
-
-      xhr.onerror = () => {
-        statusText.textContent = "❌ Upload Error";
-        progressBar.classList.add("bg-danger");
-      };
-
-      xhr.send(formData);
-    });
-
-    function showUploadModal(name) {
-      modal.style.display = "block";
-      progressBar.style.width = "0%";
-      progressBar.className = "progress-bar";
-      fileNameText.textContent = name;
-      statusText.textContent = "Starting upload...";
-      saveUploadState(name, 0);
-    }
-
-    function hideUploadModal() {
-      modal.style.display = "none";
-      clearUploadState();
-    }
-
-    function saveUploadState(name, percent) {
-      localStorage.setItem("uploadStatus", JSON.stringify({ name, percent }));
-    }
-
-    function clearUploadState() {
-      localStorage.removeItem("uploadStatus");
-    }
-
-    function restoreUploadState() {
-      const saved = JSON.parse(localStorage.getItem("uploadStatus"));
-      if (saved) {
-        showUploadModal(saved.name);
-        progressBar.style.width = saved.percent + "%";
-        statusText.textContent = `Uploading... ${Math.floor(saved.percent)}%`;
-      }
-    }
-
-    window.addEventListener("load", restoreUploadState);
-
     const isSeries = document.getElementById('isSeries');
     const seriesFields = document.getElementById('series-fields');
     const codeInput = document.getElementById('code');
 
     isSeries.addEventListener('change', () => {
       seriesFields.style.display = isSeries.checked ? 'block' : 'none';
-    });
-
-    async function fetchNextCode(prefix) {
-      try {
-        const res = await fetch(`/api/code?prefix=${encodeURIComponent(prefix)}`);
-        const data = await res.json();
-        if (data?.nextCode) {
-          document.getElementById('code').value = data.nextCode;
-        }
-      } catch (err) {
-        console.error("❌ Failed to fetch next code:", err);
-      }
-    }
-
-    const dwsCheck = document.getElementById('isDwsCheck');
-    dwsCheck.addEventListener('change', () => {
-      const prefix = dwsCheck.checked ? 'DWS' : 'BCH';
-      fetchNextCode(prefix);
-    });
-
-    // On load, fetch initial code
-    window.addEventListener('DOMContentLoaded', () => {
-      fetchNextCode(dwsCheck.checked ? 'DWS' : 'BCH');
     });
 
   </script>

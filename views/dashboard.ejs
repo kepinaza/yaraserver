@@ -3,226 +3,217 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>VIP Bot Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>📊 Dashboard</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
   <style>
     body {
-      font-size: 0.95rem;
-      background-color: #f8f9fa;
+      font-size: 0.9rem;
+      background-color: var(--bs-body-bg);
+      transition: background-color 0.3s ease;
     }
-    .navbar-brand {
-      font-weight: bold;
+
+    /* ===== Navbar (match upload/video) ===== */
+    .navbar {
+      height: 56px;
+      padding: 0.5rem 1rem;
+      z-index: 1050;
     }
+
+    /* ===== Stats Cards ===== */
+    .stats-card {
+      border-radius: 1rem;
+      padding: 1.2rem;
+      text-align: center;
+      background: #ffffff;
+      border: 1px solid #e9ecef;
+      transition: all 0.2s ease;
+    }
+
+    .stats-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .stats-card h3 {
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    /* ===== Card Styling ===== */
     .card {
-      border-radius: 0.75rem;
+      border-radius: 1rem;
+      border: 1px solid #e9ecef;
     }
+
     .card-header {
       font-weight: 600;
     }
-    .card-header .btn-sm {
-      padding: 0.25rem 0.5rem;
-      font-size: 0.75rem;
-      line-height: 1;
-    }
-    .section-title {
-      font-size: 1.3rem;
-      margin-bottom: 0.6rem;
-    }
-    .card-body p, .card-body li {
-      font-size: 0.9rem;
-      margin-bottom: 0.35rem;
-    }
+
     .list-group-item {
       border: none;
-      border-bottom: 1px solid #eaeaea;
-      padding: 0.5rem 0.75rem;
-      font-size: 0.88rem;
+      border-bottom: 1px solid #eee;
+      font-size: 0.85rem;
     }
-    .badge {
-      font-size: 0.75rem;
+
+    /* ===== Dark Mode ===== */
+    body.dark-mode {
+      background-color: #0b1e35;
+      color: #e0e6ed;
     }
-    .btn-sm {
-      font-size: 0.75rem;
-      padding: 0.35rem 0.6rem;
+
+    body.dark-mode .navbar {
+      background-color: #122b45 !important;
+    }
+
+    body.dark-mode .stats-card {
+      background-color: #152c48;
+      border-color: #2c4566;
+      color: #e0e6ed;
+    }
+
+    body.dark-mode .card {
+      background-color: #152c48;
+      border-color: #2c4566;
+      color: #e0e6ed;
+    }
+
+    body.dark-mode .list-group-item {
+      background-color: #1e3b60;
+      color: #e0e6ed;
+      border-color: #2c4566;
+    }
+
+    body.dark-mode .btn-light {
+      background-color: #2b6cb0;
+      border-color: #2b6cb0;
+      color: white;
+    }
+
+    body.dark-mode .text-muted {
+      color: #aebcd1 !important;
+    }
+
+    .container-dashboard {
+      margin-top: 4.5rem;
     }
   </style>
-  <script>
-    async function refreshDashboard() {
-      try {
-        const res = await fetch('/api/dashboard');
-        const data = await res.json();
-        const webhook = data.webhookInfo?.result || {};
-
-        document.getElementById('webhook-url').innerText = webhook.url || '❌ Not set';
-        document.getElementById('webhook-status').innerHTML = webhook.url
-          ? '<span class="text-success">✅ Connected</span>'
-          : '<span class="text-warning">⚠️ Not Connected</span>';
-        document.getElementById('webhook-error').innerText = webhook.last_error_message || 'None';
-
-        document.getElementById('vip-total').innerText = `${data.vip.total} Members`;
-        document.getElementById('vip-latest').innerHTML = data.vip.latest.map(v =>
-          `<li class="list-group-item d-flex justify-content-between align-items-center">
-             @${v.username}
-             <span class="text-muted small">${new Date(v.join_date).toLocaleString()}</span>
-           </li>`
-        ).join('');
-         
-        document.getElementById('log-total').innerText = `${data.logs.total} Entries`;
-        document.getElementById('log-latest').innerHTML = data.logs.latest.map(l =>
-          `<li class="list-group-item d-flex justify-content-between align-items-start">
-             <span class="text-muted small">${new Date(l.log_time).toLocaleString()}</span>
-             <span class="ms-2">${l.message}</span>
-           </li>`
-        ).join('');
-         
-        const payments = data.payments || [];
-        const paymentContainer = document.getElementById('payment-section');
-        paymentContainer.innerHTML = payments.length
-          ? `<ul class="list-group list-group-flush">
-              ${payments.map(p => `
-                <li class="list-group-item d-flex justify-content-between align-items-start">
-                  <div>
-                    <div class="fw-semibold">${p.donator_name || 'Anonymous'}</div>
-                    <div class="text-muted small">${new Date(p.created_at).toLocaleString()}</div>
-                  </div>
-                  <div class="text-end">
-                    <span class="badge ${p.verified ? 'bg-success' : 'bg-warning text-dark'}">
-                      ${p.verified ? 'Verified' : 'Pending'}
-                    </span><br/>
-                    <span class="fw-bold text-primary">Rp ${parseInt(p.amount_raw).toLocaleString()}</span>
-                  </div>
-                </li>`).join('')}
-            </ul>`
-          : `<p class="text-muted">No donations received yet.</p>`;
-
-        const video = data.video;
-        const videoContainer = document.getElementById('video-section');
-        videoContainer.innerHTML = video
-          ? `<div class="d-flex flex-column align-items-center text-center">
-               <img src="/${video.thumbnail}" class="img-fluid rounded mb-2" style="max-height: 160px;">
-               <ul class="list-group list-group-flush text-start w-100 small">
-                 <li class="list-group-item"><strong>🎬 Title:</strong> ${video.title}</li>
-                 <li class="list-group-item"><strong>🆔 Code:</strong> ${video.code}</li>
-                 <li class="list-group-item"><strong>📅 Date:</strong> ${new Date(video.scheduled_date).toLocaleString()}</li>
-                 <li class="list-group-item"><strong>📤 Status:</strong> ${video.sent ? '✅ Sent' : '⏳ Scheduled'}</li>
-               </ul>
-             </div>`
-          : `<p class="text-muted">No scheduled videos yet.</p>`;
-           
-        document.getElementById('last-update').innerText = new Date().toLocaleString();
-      } catch (err) {
-        console.error("❌ Failed to load dashboard data:", err);
-      }
-    }
-
-    setInterval(refreshDashboard, 10000);
-    window.onload = refreshDashboard;
-  </script>
 </head>
 
-<body class="p-3">
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="/">📊 VIP Bot</a>
-      <div>
-        <a class="nav-link text-white d-inline-block" href="/vip">🎖️ VIP</a>
-        <a class="nav-link text-white d-inline-block" href="/log">📑 Log</a>
-        <a class="nav-link text-white d-inline-block" href="/webhook">🔗 Webhook</a>
-        <a class="nav-link text-white d-inline-block" href="/upload">📤 Upload</a>
-        <a class="nav-link text-white d-inline-block" href="/videos">📼 Videos</a>
-        <a class="nav-link text-white d-inline-block" href="/payment">💰 Payment</a>
-      </div>
-    </div>
-  </nav>
-    
-    <div class="row g-3">
-      <!-- Webhook Status -->
-      <div class="col-md-4">
-        <div class="card border-info shadow-sm h-100">
-          <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-            <span>🔗 Webhook Status</span>
-            <a href="/webhook" class="btn btn-sm btn-light text-info">View</a>
-          </div>
-          <div class="card-body">
-            <ul class="list-group list-group-flush small">
-              <li class="list-group-item d-flex justify-content-between">
-                <span><strong>URL:</strong></span>
-                <span id="webhook-url">Loading...</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between">
-                <span><strong>Status:</strong></span>
-                <span id="webhook-status">...</span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between">
-                <span><strong>Last Error:</strong></span>
-                <span id="webhook-error">...</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    
-    <!-- VIP Members -->
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar border-bottom fixed-top d-flex justify-content-between align-items-center px-3 bg-white">
+  <span class="fw-semibold">📊 VIP Dashboard</span>
+
+  <div class="d-flex align-items-center gap-3">
+    <a href="/video" class="btn btn-sm btn-outline-secondary">📼 Video</a>
+    <a href="/upload" class="btn btn-sm btn-outline-secondary">📤 Upload</a>
+    <button id="toggleThemeBtn" class="btn btn-sm btn-outline-secondary">
+      🌙 Dark Mode
+    </button>
+  </div>
+</nav>
+
+<div class="container-fluid container-dashboard p-3">
+
+  <!-- ===== TOP STATS ===== -->
+  <div class="row g-3 mb-4">
     <div class="col-md-4">
-      <div class="card border-success shadow-sm h-100">
-        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-          <span>🎖️ VIP Members</span>
-          <a href="/vip" class="btn btn-sm btn-light text-success">View</a>
-        </div>
-        <div class="card-body">
-          <p><strong>Total:</strong> <span id="vip-total">Loading...</span></p>
-          <div style="max-height: 180px; overflow-y: auto;">
-            <ul id="vip-latest" class="list-group list-group-flush small">
-              <!-- Filled by JS -->
-            </ul>
-          </div>
-        </div>
+      <div class="stats-card">
+        <h3 id="video-count">0</h3>
+        <small class="text-muted">Total Video</small>
       </div>
     </div>
 
-    <!-- Activity Logs -->
     <div class="col-md-4">
-      <div class="card border-secondary shadow-sm h-100">
-        <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
-          <span>📑 Activity Logs</span>
-          <a href="/log" class="btn btn-sm btn-light text-secondary">View</a>
-        </div>
-        <div class="card-body">
-          <p><strong>Total:</strong> <span id="log-total">Loading...</span></p>
-          <div style="max-height: 180px; overflow-y: auto;">
-            <ul id="log-latest" class="list-group list-group-flush small">
-              <!-- Filled by JS -->
-            </ul>
-          </div>
-        </div>
+      <div class="stats-card">
+        <h3 id="genre-count">0</h3>
+        <small class="text-muted">Genre</small>
       </div>
     </div>
 
-    <div class="row g-3 mt-2">
-      <div class="col-md-6">
-        <div class="card border-warning shadow-sm">
-          <div class="card-header bg-warning text-white d-flex justify-content-between align-items-center">
-            <span>⏰ Latest Scheduled Video</span>
-            <a href="/videos" class="btn btn-sm btn-light text-warning">View All</a>
-          </div>
-          <div class="card-body" id="video-section">
-            <p>Loading...</p> <!-- Replaced by JS -->
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="card border-primary shadow-sm">
-          <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <span>💰 Latest Payments</span>
-            <a href="/payment" class="btn btn-sm btn-light text-primary">View All</a>
-          </div>
-          <div class="card-body" id="payment-section">
-            <p>Loading...</p>
-          </div>
-        </div>
+    <div class="col-md-4">
+      <div class="stats-card">
+        <h3 id="series-count">0</h3>
+        <small class="text-muted">Series</small>
       </div>
     </div>
   </div>
+
+  <!-- ===== LATEST VIDEO ===== -->
+  <div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>🎬 Latest Video</span>
+      <a href="/video" class="btn btn-sm btn-outline-primary">View All</a>
+    </div>
+    <div class="card-body text-center" id="video-section">
+      <p class="text-muted">Loading...</p>
+    </div>
+  </div>
+
+  <div class="text-center mt-4">
+    <small class="text-muted">
+      Last updated: <span id="last-update">...</span>
+    </small>
+  </div>
+
+</div>
+
+<script>
+  /* ===== Theme Toggle (same system as other pages) ===== */
+  const themeBtn = document.getElementById('toggleThemeBtn');
+  const body = document.body;
+
+  if (localStorage.getItem('theme') === 'dark') {
+    body.classList.add('dark-mode');
+    themeBtn.textContent = '☀️ Light Mode';
+  }
+
+  themeBtn.addEventListener('click', () => {
+    body.classList.toggle('dark-mode');
+    const isDark = body.classList.contains('dark-mode');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    themeBtn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+  });
+
+  /* ===== Dashboard Auto Refresh ===== */
+  async function refreshDashboard() {
+    try {
+      const res = await fetch('/api/dashboard');
+      const data = await res.json();
+
+      const video = data.video;
+      const videoContainer = document.getElementById('video-section');
+
+      videoContainer.innerHTML = video
+        ? `
+          <img src="/${video.thumbnail}" 
+               class="img-fluid rounded mb-3 shadow-sm"
+               style="max-height:180px;">
+          <ul class="list-group text-start small">
+            <li class="list-group-item"><strong>🎬 Title:</strong> ${video.title}</li>
+            <li class="list-group-item"><strong>🆔 Code:</strong> ${video.code}</li>
+            <li class="list-group-item"><strong>📅 Date:</strong> ${new Date(video.created_at).toLocaleString()}</li>
+          </ul>`
+        : `<p class="text-muted">No video yet.</p>`;
+
+      document.getElementById("video-count").textContent = data.totalVideo || '—';
+      document.getElementById("genre-count").textContent = data.totalGenres || '—';
+      document.getElementById("series-count").textContent = data.totalSeries || '—';
+
+      document.getElementById('last-update').innerText =
+        new Date().toLocaleTimeString();
+
+    } catch (err) {
+      console.error("❌ Dashboard load error:", err);
+    }
+  }
+
+  setInterval(refreshDashboard, 15000);
+  window.onload = refreshDashboard;
+</script>
+
 </body>
 </html>

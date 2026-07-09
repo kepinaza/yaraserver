@@ -1,1 +1,4 @@
 node_modules
+public/Uploads/
+database.sqlite
+.env

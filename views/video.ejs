@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>All Video</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-size: 0.95rem;
+      font-family: 'Segoe UI', sans-serif;
+    }
+  
+    h2 {
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+  
+    .top-btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+  
+.video-card {
+  border: 1px solid #dee2e6;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: #fff;
+}
+
+.video-card img {
+  height: 200px;
+  object-fit: cover;
+  width: 100%;
+  border-bottom: 1px solid #ddd;
+}
+  
+.video-card .card-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+  
+.video-card h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+  color: #212529;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+    .pagination-sm .page-link {
+      padding: 0.25rem 0.6rem;
+      font-size: 0.8rem;
+    }
+
+    .pagination-wrapper {
+      margin-top: 2rem;  /* Adjust as needed */
+      margin-bottom: -2rem;
+    }
+  
+.video-meta {
+  font-size: 0.82rem;
+  color: #495057;
+  margin-bottom: 0.25rem;
+}
+
+.video-meta span.badge {
+  font-size: 0.72rem;
+  border-radius: 0.4rem;
+}
+  
+    .video-meta span.text-warning {
+      font-size: 1.1rem;
+    }
+  
+.genre-tags a {
+  font-size: 0.72rem;
+  padding: 0.3em 0.55em;
+  border-radius: 20px;
+}
+
+    .btn, .genre-tags a {
+      padding: 6px 10px;
+      font-size: 0.85rem;
+    }
+  
+    .upload-status {
+      font-weight: 600;
+      color: #28a745;
+      font-size: 0.8rem;
+      display: block;
+      margin-top: 6px;
+    }
+  
+    .upload-progress {
+      height: 6px;
+      margin-top: 6px;
+    }
+  
+    .btn-sm {
+      font-size: 0.82rem;
+    }
+  
+    /* Responsive form row (scrollable on mobile) */
+    form.row.row-cols-lg-auto {
+      white-space: nowrap;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 0.5rem;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+  
+    form.row.row-cols-lg-auto::-webkit-scrollbar {
+      display: none;
+    }
+  
+    form.row.row-cols-lg-auto .col-12 {
+      min-width: 150px;
+    }
+  
+    .download-status {
+      transition: all 0.3s ease;
+    }
+  
+    .download-status.success {
+      color: #28a745;
+    }
+  
+    .download-status.error {
+      color: #dc3545;
+    }
+  
+    .download-status.info {
+      color: #0d6efd;
+    }
+  
+    /* Card hover effect */
+.video-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+  
+    /* Modal scaling */
+    #modalVideo {
+      width: 100%;
+      height: auto;
+      max-height: 60vh;
+    }
+
+    #layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    #sidebar {
+      width: 250px;
+      background-color: #fff;
+      border-right: 1px solid #ddd;
+      padding: 1rem;
+      position: fixed;
+      top: 56px; /* height of navbar */
+      bottom: 0;
+      overflow-y: auto;
+      z-index: 1020;
+    }
+
+    #main {
+      margin-left: 250px;
+      padding: 1.5rem;
+      padding-top: 5rem;
+      width: 100%;
+    }
+  
+    /* Mobile-specific tweaks */
+    @media (max-width: 768px) {
+      #sidebar {
+        position: fixed;
+        left: -260px;
+        transition: left 0.3s ease;
+      }
+
+      #sidebar.show {
+        left: 0;
+      }
+
+      #main {
+        margin-left: 0;
+        padding-top: 4rem;
+      }
+
+      .navbar-toggler {
+        margin-right: 1rem;
+      }
+
+      .video-card img {
+        height: 180px;
+      }
+    
+      .video-card .card-body {
+        padding: 0.75rem;
+      }
+    
+      .video-card h5 {
+        font-size: 0.9rem;
+      }
+    
+      .video-meta {
+        font-size: 0.75rem;
+      }
+    
+      .badge {
+        font-size: 0.7rem;
+      }
+    
+      .modal-dialog {
+        max-width: 95%;
+        margin: 1rem auto;
+      }
+    
+      .modal-title {
+        font-size: 1rem;
+      }
+    
+      .modal-body {
+        padding: 1rem;
+      }
+    
+      .modal-body ul li {
+        font-size: 0.85rem;
+      }
+    
+      .btn-sm, .form-select-sm, .form-control-sm {
+        font-size: 0.8rem;
+      }
+    
+      h2 {
+        font-size: 1.2rem;
+      }
+    
+      body {
+        padding: 1rem;
+      }
+      .top-btns {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    
+      .genre-tags a {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+      }
+
+  .navbar {
+    height: 56px;
+    padding: 0.5rem 1rem;
+    background-color: var(--bs-body-bg);
+    z-index: 1050;
+  }
+
+  .navbar .navbar-toggler {
+    padding: 0.25rem 0.5rem;
+  }
+
+  .navbar .navbar-brand {
+    font-size: 1rem;
+    flex-grow: 1;
+    text-align: center;
+    margin-left: 0.5rem;
+  }
+
+    }
+
+    @media (max-width: 400px) {
+    .row-cols-2 > * {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  }
+
+/* === DARK MODE === */
+body.dark-mode {
+  background-color: #121d2b;
+  color: #e0e6ed;
+}
+
+body.dark-mode .navbar {
+  background-color: #1a2a40;
+  color: #e0e6ed;
+  border-color: #2d3e57;
+}
+
+body.dark-mode .navbar .navbar-brand,
+body.dark-mode .navbar .btn,
+body.dark-mode .navbar .navbar-toggler {
+  color: #e0e6ed !important;
+}
+
+body.dark-mode .navbar-toggler {
+  border-color: #ccc;
+}
+
+body.dark-mode .navbar-toggler:focus,
+body.dark-mode .navbar-toggler:hover {
+  background-color: #2d3e57;
+}
+
+
+body.dark-mode .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(255,255,255,0.85)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+body.dark-mode .navbar .navbar-brand,
+body.dark-mode .navbar .btn,
+body.dark-mode .navbar-toggler-icon {
+  color: #e0e6ed !important;
+  filter: brightness(1.2);
+}
+
+body.dark-mode h1, 
+body.dark-mode h2, 
+body.dark-mode h3, 
+body.dark-mode h4, 
+body.dark-mode h5, 
+body.dark-mode h6 {
+  color: #f1f4f9;
+}
+
+body.dark-mode .text-muted,
+body.dark-mode .video-meta,
+body.dark-mode small {
+  color: #b2c1d6 !important;
+}
+
+body.dark-mode #sidebar {
+  background-color: #1a2a40;
+  border-color: #2d3e57;
+}
+
+body.dark-mode .video-card {
+  background-color: #1e2f45;
+  border-color: #2d3e57;
+}
+
+body.dark-mode .video-card h5,
+body.dark-mode .video-card .card-title {
+  color: #f1f4f9;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select,
+body.dark-mode .btn,
+body.dark-mode .list-group-item {
+  background-color: #24344c;
+  color: #e0e6ed;
+  border-color: #2d3e57;
+}
+
+body.dark-mode .form-control::placeholder {
+  color: #a2b4cc;
+}
+
+body.dark-mode .btn-outline-primary {
+  border-color: #508ef2;
+  color: #508ef2;
+}
+
+body.dark-mode .btn-outline-primary:hover {
+  background-color: #508ef2;
+  color: #fff;
+}
+
+body.dark-mode .btn-outline-secondary {
+  border-color: #ccc;
+  color: #ccc;
+}
+
+body.dark-mode .btn-outline-secondary:hover {
+  background-color: #ccc;
+  color: #000;
+}
+
+body.dark-mode .pagination .page-link {
+  background-color: #24344c;
+  color: #e0e6ed;
+  border-color: #2d3e57;
+}
+
+body.dark-mode .page-item.active .page-link {
+  background-color: #508ef2;
+  border-color: #508ef2;
+  color: #fff;
+}
+
+body.dark-mode .modal-content {
+  background-color: #1e2f45;
+  color: #e0e6ed;
+}
+
+body.dark-mode .list-group-item {
+  background-color: #1e2f45;
+  color: #e0e6ed;
+  border-color: #2d3e57;
+}
+
+body.dark-mode .genre-tags a {
+  background-color: rgba(80, 142, 242, 0.1) !important;
+  color: #6cb6ff !important;
+  border-color: #508ef2 !important;
+}
+
+body.dark-mode .btn-outline-warning {
+  color: #ffc107;
+  border-color: #ffc107;
+}
+
+body.dark-mode .btn-outline-warning:hover {
+  background-color: #ffc107;
+  color: #000;
+}
+
+body.dark-mode .badge.bg-info,
+body.dark-mode .badge.bg-secondary,
+body.dark-mode .badge.bg-warning-subtle {
+  background-color: #2b3b55 !important;
+  color: #d9e5f3 !important;
+  border-color: #3b4f6a !important;
+}
+
+body.dark-mode .badge.text-warning-emphasis {
+  color: #ffc107 !important;
+}
+
+.folder-overlay {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+  color: white;
+  padding: 0.5rem;
+}
+
+  </style>
+
+</head>
+<body class="p-4">
+<nav class="navbar border-bottom fixed-top px-3 d-flex justify-content-between align-items-center">
+  <button class="navbar-toggler" type="button" id="sidebarToggle" aria-label="Toggle sidebar">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <span class="navbar-brand fw-semibold px-3 mb-0 ms-2">Video Library</span>
+  <div class="ms-auto">
+    <button id="toggleThemeBtn" class="btn btn-sm btn-outline-secondary">🌙 Dark Mode</button>
+  </div>
+</nav>
+
+<div id="layout">
+  <div id="sidebar">
+    <div class="mb-3">
+      <a href="/" class="btn btn-outline-primary w-100 mb-2">🏠 Dashboard</a>
+      <a href="/upload" class="btn btn-outline-secondary w-100">⬆️ Upload</a>
+    </div>
+
+    <form method="GET" class="d-grid gap-2">
+      <div class="mb-3 position-relative">
+        <input type="text" name="search" class="form-control form-control-sm" placeholder="🔍 Search title/code" autocomplete="off" placeholder="🔍 Title or Code" value="<%= query?.search || '' %>">
+        <ul id="search-suggestions" class="list-group position-absolute w-100 shadow-sm" style="display: none; z-index: 1000;"></ul>
+      </div>
+      <select name="code" class="form-select form-select-sm">
+        <option value="">All Codes</option>
+        <option value="BCH" <%= query?.code === 'BCH' ? 'selected' : '' %>>BCH (<%= bchCount %>)</option>
+        <option value="DWS" <%= query?.code === 'DWS' ? 'selected' : '' %>>DWS (<%= dwsCount %>)</option>
+      </select>
+
+      <select name="rating" class="form-select form-select-sm">
+        <option value="">All Ratings (<%= totalAllRatings %>)</option>
+        <% for (let r = 5; r >= 1; r--) { %>
+          <option value="<%= r %>" <%= query?.rating == r ? 'selected' : '' %>>
+            <%= '★'.repeat(r) + '☆'.repeat(5 - r) %> (<%= ratingCounts[r] || 0 %>)
+          </option>
+        <% } %>
+      </select>
+
+      <select name="sort" class="form-select form-select-sm">
+        <option value="random" <%= query?.sort === 'random' ? 'selected' : '' %>>Random</option>
+        <option value="newest" <%= query?.sort === 'newest' ? 'selected' : '' %>>Newest</option>
+        <option value="oldest" <%= query?.sort === 'oldest' ? 'selected' : '' %>>Oldest</option>
+      </select>
+
+      <select name="view" class="form-select form-select-sm">
+        <option value="">All</option>
+        <option value="series" <%= query?.view === 'series' ? 'selected' : '' %>>📁 Series</option>
+        <option value="genre" <%= query?.view === 'genre' ? 'selected' : '' %>>📁 Genre</option>
+      </select>
+
+      <a href="/video/dump" class="btn btn-outline-danger w-100 mb-2">
+        🗑️ Dump
+      </a>
+
+      <button type="submit" class="btn btn-sm btn-primary w-100">Apply</button>
+      <a href="/video" class="btn btn-sm btn-secondary w-100">Reset</a>
+    </form>
+  </div>
+
+  <div id="main">
+    <% if (typeof isFolderView !== 'undefined' && isFolderView) { %>
+      <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3">
+      
+        <% (folders || []).forEach(f => { %>
+          <div class="col">
+            <a href="/video?<%= folderType %>=<%= encodeURIComponent(f.name) %>"
+               class="text-decoration-none">
+            
+              <div class="card video-card shadow-sm rounded h-100 border-0">
+                <img src="/<%= f.thumbnail %>" 
+                     class="card-img-top" 
+                     style="height:160px; object-fit:cover;">
+              
+                <div class="card-body text-center">
+                  <h6 class="fw-semibold mb-1 text-truncate">
+                    📁 <%= f.name %>
+                  </h6>
+                  <small class="text-muted">
+                    <%= f.total %> video
+                  </small>
+                </div>
+              </div>
+            
+            </a>
+          </div>
+        <% }) %>
+        
+      </div>
+
+      <% } else { %>
+
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3">
+      <% video.forEach(v => { %>
+        <div class="col">
+          <div class="card video-card shadow-sm rounded h-100 border-0">
+            <img src="/<%= v.thumbnail %>" class="card-img-top rounded-top" alt="Thumbnail" style="height: 160px; object-fit: cover;">
+            <div class="card-body p-3 d-flex flex-column">
+              <h5 class="card-title text-truncate mb-1" title="<%= v.title %>"><%= v.title %></h5>
+            
+              <div class="video-meta mb-1"><span class="badge bg-secondary">Code: <%= v.code %></span></div>
+              <div class="video-meta mb-1">
+                <span class="badge bg-info text-dark">📅 <%= v.created_at ? new Date(v.created_at).toLocaleString() : 'N/A' %></span>
+              </div>
+              <div class="video-meta mb-1 text-muted small">🎞️ Duration: 
+                <% function formatDuration(seconds) {
+                  const m = Math.floor(seconds / 60);
+                  const s = Math.floor(seconds % 60);
+                  return m + ':' + (s < 10 ? '0' : '') + s;
+                } %>
+                <%= v.duration ? formatDuration(v.duration) : 'N/A' %>
+              </div>
+              <div class="video-meta mb-2 text-muted small">💾 Size: <%= v.size ? (v.size / (1024*1024)).toFixed(2) + ' MB' : 'N/A' %></div>
+
+              <div class="video-meta mb-2">
+                <span class="text-warning" title="Rating: <%= v.rating || 0 %> stars">
+                  <% for (let i = 1; i <= 5; i++) { %>
+                    <%= i <= (v.rating || 0) ? '★' : '☆' %>
+                  <% } %>
+                </span>
+              </div>
+
+              <% if (v.genre) { %>
+                <div class="video-meta mb-2 genre-tags d-flex flex-wrap gap-1">
+                  <% v.genre.split(',').map(g => g.trim()).forEach(g => { %>
+                    <a 
+                      href="/video?genre=<%= encodeURIComponent(g) %>" 
+                      class="badge bg-primary-subtle text-primary-emphasis border border-primary-subtle rounded-pill text-decoration-none px-2 py-1 small"
+                      title="Filter by <%= g %>">
+                      <%= g %>
+                    </a>
+                  <% }); %>
+                </div>
+              <% } %>
+
+              <% if (v.series_title) { %>
+                <div class="video-meta mb-2">
+                  <a 
+                    href="/video?series=<%= v.series_title %>" 
+                    class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill text-decoration-none px-2 py-1 small"
+                    title="Filter by series: <%= v.series_title %>">
+                    🎬 <%= v.series_title %>
+                  </a>
+                </div>
+              <% } %>
+              
+              <div class="mt-auto">
+              <% if (!isDump) { %>
+                <button 
+                  class="btn btn-outline-primary btn-sm w-100 mb-2 preview-btn"
+                  data-bs-toggle="modal"
+                  data-bs-target="#videoPreviewModal"
+                  data-id="<%= v.id %>"
+                  data-title="<%= v.title %>"
+                  data-code="<%= v.code %>"
+                  data-date="<%= new Date(v.created_at).toLocaleString() %>"
+                  data-iso-date="<%= new Date(v.created_at).toISOString() %>"
+                  data-duration="<%= v.duration %>"
+                  data-size="<%= v.size %>"
+                  data-rating="<%= v.rating || 0 %>"
+                  data-genre="<%= v.genre || '' %>"
+                  data-series-code="<%= v.series_code || '' %>"
+                  data-series-title="<%= v.series_title || '' %>"
+                  data-src="/<%= v.path %>">
+
+                  🔍 Preview
+                </button>
+                  <form class="download-video-form" data-video-path="/<%= v.path %>">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">⬇️ Download</button>
+                    <progress class="upload-progress" value="0" max="100" style="width:100%; display:none; margin-top:4px;"></progress>
+                    <div class="download-status small mt-1 fw-medium"></div>
+                  </form>
+                <% } %>
+                <% if (isDump) { %>
+                  <form action="/video/restore/<%= v.id %>" method="POST" class="mb-2">
+                    <button class="btn btn-success btn-sm w-100">
+                      ♻️ Restore
+                    </button>
+                  </form>
+                
+                  <button
+                    class="btn btn-danger btn-sm w-100 permanent-delete-btn"
+                    data-id="<%= v.id %>">
+                    ❌ Delete Permanently
+                  </button>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }) %>
+      <% } %>
+    </div>
+
+  <% if (totalPages > 1) { %>
+    <div class="pagination-wrapper text-center mt-4">
+      <div class="text-muted small mb-2">
+        <%= nowCount %> / <%= nowCount + remaining %> video
+      </div>
+
+      <nav class="d-flex justify-content-center">
+        <ul class="pagination pagination-sm">
+          <% 
+            const windowSize = 6;
+            let startPage = Math.max(1, page - Math.floor(windowSize / 2));
+            let endPage = startPage + windowSize - 1;
+
+            if (endPage > totalPages) {
+              endPage = totalPages;
+              startPage = Math.max(1, endPage - windowSize + 1);
+            }
+
+            for (let p = startPage; p <= endPage; p++) {
+          %>
+            <li class="page-item <%= page === p ? 'active' : '' %>">
+              <a class="page-link" href="/video?<%= new URLSearchParams({ ...query, page: p }).toString() %>"><%= p %></a>
+            </li>
+          <% } %>
+        </ul>
+      </nav>
+    </div>
+  <% } %>
+
+  </div>
+
+  <!-- Video Preview Modal -->
+  <div class="modal fade" id="videoPreviewModal" tabindex="-1" aria-labelledby="videoPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+      <div class="modal-content border-0 shadow rounded-3">
+        <div class="modal-header border-bottom-0 d-flex align-items-center">
+          <h6 class="modal-title me-auto" id="videoPreviewModalLabel">🎬 Video Preview</h6>
+          
+          <div class="ms-auto d-flex align-items-center gap-2">
+            <a id="editVideoBtn" href="#" class="btn btn-sm btn-warning">
+                Edit
+            </a>
+
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+        </div>
+        <div class="modal-body p-3">
+
+          <h6 id="modalTitle" class="mb-2 fw-semibold text-primary"></h6>
+
+          <ul class="list-unstyled small mb-3">
+            <li><strong>🆔 Code:</strong> <span id="modalCode"></span></li>
+            <li><strong>📅 Upload:</strong> <span id="modalDate"></span></li>
+            <li><strong>🎞️ Duration:</strong> <span id="modalDuration"></span></li>
+            <li><strong>💾 Size:</strong> <span id="modalSize"></span></li>
+            <li><strong>⭐ Rating:</strong> <span id="modalRating" class="text-warning"></span></li>
+            <li><strong></strong> <span id="modalGenre" class="d-inline-flex flex-wrap gap-1 mt-1"></span></li>
+            <li id="modalSeriesWrapper" style="display: none;">🎬<a id="modalSeries" href="#" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill text-decoration-none px-2 py-1 small"></a></li>
+          </ul>
+
+          <div class="ratio ratio-16x9 rounded overflow-hidden border">
+            <video id="modalVideo" class="w-100 h-100" controls></video>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  const themeBtn = document.getElementById('toggleThemeBtn');
+  const body = document.body;
+
+  // Load theme from localStorage
+  if (localStorage.getItem('theme') === 'dark') {
+    body.classList.add('dark-mode');
+    themeBtn.textContent = '☀️ Light Mode';
+  }
+
+  themeBtn.addEventListener('click', () => {
+    body.classList.toggle('dark-mode');
+    const isDark = body.classList.contains('dark-mode');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    themeBtn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+  });
+
+    document.getElementById('sidebarToggle').addEventListener('click', function () {
+      document.getElementById('sidebar').classList.toggle('show');
+    });
+
+    document.querySelectorAll('.preview-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const modal = document.getElementById('videoPreviewModal');
+        modal.querySelector('#modalTitle').textContent = btn.dataset.title;
+        modal.querySelector('#modalCode').textContent = btn.dataset.code;
+        modal.querySelector('#modalDate').textContent = btn.dataset.date;
+        modal.querySelector('#modalVideo').src = btn.dataset.src;
+      });
+    });
+
+    document.getElementById('videoPreviewModal').addEventListener('hidden.bs.modal', () => {
+      const modalVideo = document.getElementById('modalVideo');
+      modalVideo.pause();
+      modalVideo.currentTime = 0;
+    });
+      
+    document.querySelectorAll('.download-video-form').forEach(form => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const videoPath = form.dataset.videoPath;
+        const progressBar = form.querySelector('.upload-progress');
+        const statusMsg = form.querySelector('.download-status');
+      
+        // Reset status
+        progressBar.style.display = 'block';
+        progressBar.value = 0;
+        statusMsg.textContent = 'Downloading...';
+        statusMsg.className = 'download-status info';
+      
+        try {
+          const response = await fetch(videoPath);
+        
+          if (!response.ok) throw new Error('Download failed');
+        
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+        
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = videoPath.split('/').pop();
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        
+          let val = 0;
+          const interval = setInterval(() => {
+            val += 10;
+            progressBar.value = val;
+            if (val >= 100) {
+              clearInterval(interval);
+              progressBar.style.display = 'none';
+              statusMsg.textContent = '✅ Download Complete';
+              statusMsg.className = 'download-status success';
+            }
+          }, 100);
+        } catch (err) {
+          progressBar.style.display = 'none';
+          statusMsg.textContent = '❌ Download Failed';
+          statusMsg.className = 'download-status error';
+        }
+      });
+    });
+
+    document.querySelectorAll('.preview-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const genreRaw = btn.dataset.genre || '';
+        const modalGenreContainer = document.getElementById('modalGenre');
+        modalGenreContainer.innerHTML = '';
+
+        genreRaw.split(',').map(g => g.trim()).filter(Boolean).forEach(g => {
+          const tag = document.createElement('a');
+          tag.href = `/video?genre=${encodeURIComponent(g)}`;
+          tag.textContent = g;
+          tag.className = "badge bg-primary-subtle text-primary-emphasis border border-primary-subtle rounded-pill text-decoration-none px-2 py-1 small";
+          tag.title = `Filter by ${g}`;
+          modalGenreContainer.appendChild(tag);
+        });
+
+        const videoId = btn.dataset.id;
+        const title = btn.dataset.title;
+        const code = btn.dataset.code;
+        const date = btn.dataset.date;
+
+        // ⬇️ Series info
+        const seriesCode = btn.dataset.seriesCode;
+        const seriesTitle = btn.dataset.seriesTitle;
+        const seriesWrapper = document.getElementById('modalSeriesWrapper');
+        const seriesEl = document.getElementById('modalSeries');
+        const editBtn = document.getElementById('editVideoBtn');
+
+        if (videoId) {
+          editBtn.href = `/video/edit/${videoId}`;
+          editBtn.style.display = 'inline-block';
+        } else {
+          editBtn.style.display = 'none';
+        }
+
+        if (seriesCode && seriesTitle) {
+          seriesWrapper.style.display = 'list-item';
+          seriesEl.textContent = seriesTitle;
+          seriesEl.href = `/video?series=${encodeURIComponent(seriesTitle)}`;
+          seriesEl.title = `Filter by series: ${seriesTitle}`;
+        } else {
+          seriesWrapper.style.display = 'none';
+        }
+
+        const isoDate = btn.dataset.isoDate;
+        const src = btn.dataset.src;
+        const duration = btn.dataset.duration;
+        const size = btn.dataset.size;
+        const rating = parseInt(btn.dataset.rating || 0);
+        const stars = Array.from({ length: 5 }, (_, i) => i < rating ? '★' : '☆').join('');
+        document.getElementById('modalRating').textContent = stars;
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalCode').textContent = code;
+        document.getElementById('modalDate').textContent = date;
+        document.getElementById('modalVideo').src = src;
+      
+        // Format duration
+        const formattedDuration = duration ? formatDuration(duration) : 'N/A';
+        document.getElementById('modalDuration').textContent = formattedDuration;
+      
+        // Format size
+        const formattedSize = size ? (size / (1024 * 1024)).toFixed(2) + ' MB' : 'N/A';
+        document.getElementById('modalSize').textContent = formattedSize;
+
+        if (isDump) {
+          editBtn.style.display = 'none';
+        }
+      });
+    });
+
+    // Duration helper
+    function formatDuration(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    // Countdown updater
+    function updateCountdown(element, futureDate) {
+      function update() {
+        const now = new Date();
+        const diff = futureDate - now;
+        if (diff <= 0) {
+          element.textContent = "Time reached";
+          return;
+        }
+      
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+      
+        element.textContent = `${hours}h ${mins}m ${secs}s`;
+      }
+    
+      update();
+      if (element._interval) clearInterval(element._interval);
+      element._interval = setInterval(update, 1000);
+    }
+
+    function updateCountdowns() {
+      const countdownElements = document.querySelectorAll('.countdown');
+      const now = new Date();
+
+      countdownElements.forEach(el => {
+        const targetDate = new Date(el.dataset.date);
+        const diff = targetDate - now;
+
+        if (diff <= 0) {
+          el.textContent = 'Time reached';
+        } else {
+          const hours = Math.floor(diff / (1000 * 60 * 60));
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+          el.textContent = `${hours}h ${minutes}m ${seconds}s`;
+        }
+      });
+    }
+
+    // Autocomplete for video title/code
+    const searchInput = document.querySelector('input[name="search"]');
+    const searchSuggestionBox = document.getElementById('search-suggestions');
+    
+    searchInput.addEventListener('input', async () => {
+      const query = searchInput.value.trim();
+      if (!query) {
+        searchSuggestionBox.style.display = 'none';
+        return;
+      }
+    
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const titles = await res.json();
+      
+        searchSuggestionBox.innerHTML = '';
+        if (titles.length) {
+          const seen = new Set();
+          titles.forEach(({ title }) => {
+            if (!title || seen.has(title)) return;
+            seen.add(title);
+          
+            const li = document.createElement('li');
+            li.className = 'list-group-item list-group-item-action py-1 px-2';
+            li.textContent = title;
+            li.addEventListener('click', () => {
+              searchInput.value = title;
+              searchSuggestionBox.style.display = 'none';
+            });
+            searchSuggestionBox.appendChild(li);
+          });
+          searchSuggestionBox.style.display = 'block';
+        } else {
+          searchSuggestionBox.style.display = 'none';
+        }
+      } catch (err) {
+        console.error('Search autocomplete error:', err);
+        searchSuggestionBox.style.display = 'none';
+      }
+    });
+
+    // Hide suggestions on click outside
+    document.addEventListener('click', (e) => {
+      if (!searchSuggestionBox.contains(e.target) && e.target !== searchInput) {
+        searchSuggestionBox.style.display = 'none';
+      }
+    });
+
+    setInterval(updateCountdowns, 1000);
+    updateCountdowns();
+
+    document.querySelectorAll('.permanent-delete-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const password = prompt("Enter admin password:");
+      
+        if (!password) return;
+      
+        const res = await fetch(`/video/delete/${id}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password })
+        });
+      
+        if (res.ok) {
+          location.reload();
+        } else {
+          alert("❌ Wrong password or delete failed");
+        }
+      });
+    });
+
+  </script>
+</body>
+</html>
